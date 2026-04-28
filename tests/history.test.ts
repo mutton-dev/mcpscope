@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const fsMock = {
-  existsSync: vi.fn(),
-};
+const { fsMock } = vi.hoisted(() => ({
+  fsMock: {
+    existsSync: vi.fn(),
+    mkdirSync: vi.fn(),
+  },
+}));
 
 vi.mock('node:fs', () => fsMock);
 
@@ -16,6 +19,7 @@ import type { TraceEntry } from '../src/trace.js';
 
 beforeEach(() => {
   fsMock.existsSync.mockReset();
+  fsMock.mkdirSync.mockReset();
 });
 
 describe('isPro', () => {
