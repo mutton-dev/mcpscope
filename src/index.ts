@@ -14,7 +14,16 @@ async function main() {
   const client = await connectStdio(command, args);
   const caps = await listCapabilities(client);
   const label = `${command} ${args.join(' ')}`.trim();
-  render(React.createElement(App, { client, caps, serverLabel: label }));
+  const { waitUntilExit } = render(React.createElement(App, { client, caps, serverLabel: label }));
+
+  const cleanup = async () => {
+    try { await client.close(); } catch {}
+  };
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+
+  await waitUntilExit();
+  await cleanup();
 }
 
 main().catch((err) => {

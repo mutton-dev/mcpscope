@@ -11,25 +11,30 @@ export function isPro(): boolean {
   return existsSync(LICENSE_PATH);
 }
 
-export function openHistoryDb(dbPath: string = DEFAULT_DB_PATH): Database.Database {
-  if (dbPath !== ':memory:') {
-    const dir = dirname(dbPath);
-    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+export function openHistoryDb(dbPath: string = DEFAULT_DB_PATH): Database.Database | null {
+  try {
+    if (dbPath !== ':memory:') {
+      const dir = dirname(dbPath);
+      if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+    }
+    const db = new Database(dbPath);
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS history (
+        pk INTEGER PRIMARY KEY AUTOINCREMENT,
+        entry_id INTEGER NOT NULL,
+        timestamp TEXT NOT NULL,
+        tool_name TEXT NOT NULL,
+        duration_ms INTEGER NOT NULL,
+        is_error INTEGER NOT NULL,
+        request TEXT NOT NULL,
+        response TEXT NOT NULL
+      );
+    `);
+    return db;
+  } catch (err) {
+    console.warn('[mcpscope] history disabled:', (err as Error).message);
+    return null;
   }
-  const db = new Database(dbPath);
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS history (
-      pk INTEGER PRIMARY KEY AUTOINCREMENT,
-      entry_id INTEGER NOT NULL,
-      timestamp TEXT NOT NULL,
-      tool_name TEXT NOT NULL,
-      duration_ms INTEGER NOT NULL,
-      is_error INTEGER NOT NULL,
-      request TEXT NOT NULL,
-      response TEXT NOT NULL
-    );
-  `);
-  return db;
 }
 
 export function saveHistory(db: Database.Database, entry: TraceEntry): void {

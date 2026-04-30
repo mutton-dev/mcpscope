@@ -10,14 +10,6 @@ export interface TraceEntry {
   response: unknown;
 }
 
-function formatTimestamp(date = new Date()): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
-    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
-  );
-}
-
 export function formatTrace(entry: TraceEntry): string {
   const status = entry.isError ? 'ERR' : 'OK';
   const header = `[${entry.timestamp}] tool: ${entry.toolName} (${entry.durationMs}ms) ${status}`;
@@ -33,7 +25,7 @@ export function addToTrace(
 ): TraceEntry {
   const entry: TraceEntry = {
     id: history.length + 1,
-    timestamp: formatTimestamp(),
+    timestamp: new Date().toISOString(),
     toolName,
     durationMs: result.trace.durationMs,
     isError: result.isError,

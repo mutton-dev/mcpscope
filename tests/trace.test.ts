@@ -58,6 +58,7 @@ describe('addToTrace', () => {
     expect(entry.durationMs).toBe(7);
     expect(entry.isError).toBe(false);
     expect(typeof entry.timestamp).toBe('string');
+    expect(entry.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
   it('increments id across multiple appends', () => {

@@ -12,8 +12,7 @@
     "jsx": "react"
   },
   "include": [
-    "src/**/*",
-    "tests/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "tests",

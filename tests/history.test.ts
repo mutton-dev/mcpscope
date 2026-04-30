@@ -45,7 +45,7 @@ describe('history database', () => {
   });
 
   it('saves and retrieves entries newest-first', () => {
-    const db = openHistoryDb(':memory:');
+    const db = openHistoryDb(':memory:')!;
     saveHistory(db, sample(1));
     saveHistory(db, sample(2, 'other', true));
 
@@ -60,11 +60,23 @@ describe('history database', () => {
   });
 
   it('respects limit', () => {
-    const db = openHistoryDb(':memory:');
+    const db = openHistoryDb(':memory:')!;
     for (let i = 1; i <= 5; i++) saveHistory(db, sample(i));
     const limited = getHistory(db, 2);
     expect(limited).toHaveLength(2);
     expect(limited[0].id).toBe(5);
     db.close();
+  });
+
+  it('returns null and warns when directory creation fails', () => {
+    fsMock.existsSync.mockReturnValue(false);
+    fsMock.mkdirSync.mockImplementation(() => {
+      throw Object.assign(new Error('EACCES: permission denied'), { code: 'EACCES' });
+    });
+    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const db = openHistoryDb('/no/access/test.db');
+    expect(db).toBeNull();
+    expect(consoleSpy).toHaveBeenCalledWith('[mcpscope] history disabled:', expect.any(String));
+    consoleSpy.mockRestore();
   });
 });
